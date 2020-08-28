@@ -1,10 +1,11 @@
 <?php
 
 namespace App;
-
+use App\Role;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+
 
 class User extends Authenticatable
 {
@@ -43,5 +44,15 @@ class User extends Authenticatable
     public function comments()
     {
         return $this->hasOne('App\Comment'); // 
+    }
+    public function roles(){
+        return $this->BelongstoMany('App\Role');
+    }
+    public function hasRole($role)
+    {
+        if($this->roles()->where('name', $role)->first()){
+            return true;
+        }
+            return false;
     }
 }
