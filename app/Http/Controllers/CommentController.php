@@ -5,6 +5,7 @@ use App\Comment;
 use App\Post;
 use Auth;
 use App\User;
+use Session;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 class CommentController extends Controller
@@ -35,7 +36,7 @@ class CommentController extends Controller
        // $comment->user()->associate($user);
         $comment->save();
                
-      
+        Session::flash('succes','the comment successfullly submitted !');
 
         return back();
     }

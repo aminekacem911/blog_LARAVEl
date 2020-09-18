@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use App\User;
 use App\Role;
+use Image;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -30,7 +31,7 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = RouteServiceProvider::HOME;
+    protected $redirectTo = '/post';
 
     /**
      * Create a new controller instance.
@@ -54,6 +55,7 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'image' => ['required'],
         ]);
     }
 
@@ -65,6 +67,34 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+
+        $image = $data['image'];
+        $filename = time(). '.' . $image->getClientOriginalExtension();
+        $location = '/img/user/' .$filename;
+        Image::make($image)->resize(800,400)->save(public_path(). $location);
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'image' =>$location,
+        ]);
+        $role =Role::select('id')->where('name','user')->first();
+        $user->roles()->attach($role);
+        
+       
+        //dd($user);
+        return $user;
+
+
+
+
+
+
+
+        /*$image = $data['image'];
+        $filename = time(). '.' . $image->getClientOriginalExtension();
+        $location = '/img/user/' .$filename;
+        Image::make($image)->resize(800,400)->save(public_path(). $location);
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -72,6 +102,6 @@ class RegisterController extends Controller
         ]);
         $role =Role::select('id')->where('name','user')->first();
         $user->roles()->attach($role);
-        return $user;
+        return $user;*/
     }
 }

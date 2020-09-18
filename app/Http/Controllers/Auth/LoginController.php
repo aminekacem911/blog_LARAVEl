@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Http\Controllers\Auth;
-use Auth ;
+use App\Role;
+use App\User;
+use Auth;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
@@ -40,10 +42,18 @@ class LoginController extends Controller
     public function redirectTo()
     {
         if (Auth::user()->hasRole('admin')){
-            $this->redirectTo = route('admin.users.index');
+            $this->redirectTo = route('admin.index');
             return $this->redirectTo;
         }
-        $this->redirectTo = route('home');
-        return $this->redirectTo;
+        elseif (Auth::user()->hasRole('user') && Auth::user()->isBanned()){
+            Auth::logout();
+            $this->redirectTo = route('contact');
+            return $this->redirectTo;
+        }
+        else{
+            $this->redirectTo = route('post.index');
+            return $this->redirectTo;
+        }
+       
     }
 }

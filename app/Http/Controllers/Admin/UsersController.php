@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\User;
 use App\Role;
 use Gate;
+use Auth;
 use Illuminate\Http\Request;
 
 class usersController extends Controller
@@ -40,7 +41,19 @@ class usersController extends Controller
             return redirect(route('admin.users.index'));
         }
         $user ->roles()->detach();
-        $user->delete();
+        $user->delete();    
+        return redirect()->route('admin.users.index');
+    }
+    public function ban(User $user)
+    {
+        if(Gate::denies('ban-users')){
+            return redirect(route('admin.users.index'));
+        }
+        $user->ban([
+            'comment' => 'Enjoy your ban!',
+            'expired_at' => '+1 month'
+        ]);
+        
         return redirect()->route('admin.users.index');
     }
 }

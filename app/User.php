@@ -5,11 +5,14 @@ use App\Role;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Cog\Contracts\Ban\Bannable as BannableContract;
+use App\User;
+use Tymon\JWTAuth\Contracts\JWTSubject;
+use Cog\Laravel\Ban\Traits\Bannable;
 
-
-class User extends Authenticatable
+class User extends Authenticatable implements BannableContract ,JWTSubject
 {
-    use Notifiable;
+    use Notifiable, Bannable;
 
     /**
      * The attributes that are mass assignable.
@@ -17,7 +20,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'email', 'password','name',
+        'email', 'password','name','image','banned_at'
     ];
 
     /**
@@ -39,11 +42,11 @@ class User extends Authenticatable
     ];
     public function posts()
     {
-        return $this->hasMany('App\Post'); // 
+        return $this->hasMany('App\Post','user_id'); // 
     }
     public function comments()
     {
-        return $this->hasOne('App\Comment'); // 
+        return $this->hasMany('App\Comment'); // 
     }
     public function roles(){
         return $this->BelongstoMany('App\Role');
@@ -54,5 +57,19 @@ class User extends Authenticatable
             return true;
         }
             return false;
+    }
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     *
+     * @return array
+     */
+    public function getJWTCustomClaims()
+    {
+        return [];
     }
 }

@@ -4,6 +4,11 @@ namespace App\Http\Controllers;
 use App\Post;
 use Auth;
 use App\User;
+use App\Comment;
+use App\Category;
+use Session;
+use Response;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Http\Request;
 
@@ -16,10 +21,17 @@ class PostController extends Controller
      */
     public function index()
     {
-        $user =  Auth::user();
+        
+        //$users =  User::all();
         //dd($user);
-        $post = Post::all();
+        /*$userimg = DB::table('users')
+        ->join('posts','posts.user_id','=','users.id')
+        ->select('users.image')
+        ->first();*/
+        //$user = User::all();
+        $post = Post::where('approve','=',1)->paginate(5);
         return view('post.index',compact('post'));
+        
     }
 
     /**
@@ -29,7 +41,7 @@ class PostController extends Controller
      */
     public function create()
     {
-        return view('post.create');
+        return view('post.index');
     }
 
     /**
@@ -42,16 +54,22 @@ class PostController extends Controller
     {
         $request->validate([
             'title'=>'required',
-            'desc' =>'required'
+            'desc' =>'required',
+            'cat_id' =>'required'
         ]);
         $post = new Post();
         $user = new User();
+        $category = new Category();
         $post ->title =$request->title;
         $post ->desc =$request->desc;
         $post ->user_id = Auth::user()->id;
         $post ->user($request['user_id']);
+        $post ->cat_id =$request->cat_id;
+        $post ->category($request['cat_id']);  
+        //dd($post)  ;
         $post->save();
-        return redirect()->route('post.show', $post->id);
+        Session::flash('succes','the post successfullly submitted !');
+        return redirect()->route('post.index');
                 //return response()->json($post);
     }
 
@@ -75,10 +93,10 @@ class PostController extends Controller
     public function edit($id)
     {
       
-        
+        $namecat = Category::all();
         $post = Post::find($id);
         
-        return view('post.edit',compact('post'));
+        return view('post.edit',compact('post','namecat'));
     }
 
     /**
@@ -93,13 +111,14 @@ class PostController extends Controller
         $this->validate($request, array(
             'title' => 'required',
             'desc' => 'required',
+            'cat_id' =>'required'
         ));
         $post = Post::find($id);
         $post->title = $request->input('title');
         $post->desc =$request->input('desc');
         $post->user_id = Auth::user()->id;
         $post ->user($request['user_id']);
-        $post->user()->associate($user);
+        $post->cat_id = $request->input('cat_id');
         $post ->save();
         return redirect()->route('post.index');
     }
@@ -113,6 +132,7 @@ class PostController extends Controller
     public function destroy($id)
     {
         $post = Post::find($id);
+        //dd($post);
         $post->delete();
         return back();
     }
